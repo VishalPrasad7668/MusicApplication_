@@ -1,0 +1,7 @@
+server:
+  port: 9400
+spring:
+  application:
+    name: springcloud-api-gateway
+  main:
+   web-application-type: reactive

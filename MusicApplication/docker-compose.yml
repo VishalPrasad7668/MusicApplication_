@@ -1,0 +1,69 @@
+version: '3.9'
+services:
+  rabbitmq:
+    image: rabbitmq:3.10-management
+    container_name: rabbitmq-container
+    restart: always
+    ports:
+      - 5672:5672
+      - 15672:15672
+    network_mode: track-network
+
+  track-service:
+    image: track_image
+    container_name: track-service
+    build: UserTrackService/
+    restart: always
+    network_mode: track-network
+    ports:
+      - 8095:8095
+    depends_on:
+      - mongo-service2
+      - springcloud-api-gateway
+    environment:
+      SPRING_RABBITMQ_HOST: rabbitmq-container
+
+  mongo-service2:
+    image: mongo
+    container_name: mongo-service2
+    ports:
+      - 27017:27017
+    network_mode: track-network
+
+  authentication-service1:
+    image: authentication_image
+    container_name: authentication-service1
+    build: UserAuthenticationService/
+    restart: always
+    network_mode: track-network
+    ports:
+      - 8098:8098
+    depends_on:
+      - mysql-service2
+      - springcloud-api-gateway
+    environment:
+      SPRING_RABBITMQ_HOST: rabbitmq-container
+
+  mysql-service2:
+    image: mysql:latest
+    container_name: mysql-service2
+    network_mode: track-network
+    ports:
+      - 3306:3306
+
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_USERNAME: root
+      MYSQL_PASSWORD: root
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+
+  springcloud-api-gateway:
+    container_name: springcloud-api-gateway
+    build: SpringCloudAPIGateway/
+    network_mode: track-network
+    ports:
+      - 9400:9400
+
+networks:
+  track-network:
+    driver: bridge
